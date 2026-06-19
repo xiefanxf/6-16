@@ -1,4 +1,7 @@
-const assetBase = import.meta.env?.BASE_URL ?? "./";
+const configuredBase = import.meta.env?.BASE_URL ?? "./";
+const assetBase = typeof document === "undefined"
+  ? configuredBase
+  : new URL(configuredBase, document.baseURI).href;
 
 export const SCENES = {
   classroom: `${assetBase}assets/classroom-rain.png`,
