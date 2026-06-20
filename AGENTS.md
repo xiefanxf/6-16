@@ -16,3 +16,4 @@ When implementing from a selected generated mock, treat that image as the source
 - Reference public scene assets through Vite's base URL so local preview and GitHub Pages subpath deployments behave identically.
 - Keep the first paint lightweight: use the classroom preview immediately, fade in the compressed full scene, then preload later locations after the title is ready.
 - Preserve a complete title flow with a skippable opening, new game, continue, chapter select, and functional settings.
+- Advance dialogue only from the dialogue-copy region or keyboard shortcuts; background and scene clicks must remain inert to prevent accidental choices.

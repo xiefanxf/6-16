@@ -81,6 +81,7 @@ export function App() {
   const hasSave = useMemo(() => Boolean(localStorage.getItem(SAVE_KEY)), [toast]);
   const chapterOneIndex = useMemo(() => STORY.findIndex((item) => item.id === "chapter-one"), []);
   const chapterLabel = index >= chapterOneIndex ? "第一章　缺席者" : "序章　雨没有停";
+  const canAdvanceByClick = !line.choices && !pendingFact && !showLog && !showFacts && !showEnd;
 
   useEffect(() => {
     if (started || !opening) return undefined;
@@ -311,9 +312,6 @@ export function App() {
     <main
       className={`game-shell story-screen effect-${line.effect ?? "none"}`}
       style={{ "--scene-image": `url(${sceneImage})` }}
-      onClick={(event) => {
-        if (event.target === event.currentTarget || event.target.classList.contains("scene-layer")) advance();
-      }}
     >
       <div className="scene-layer" aria-hidden="true" />
       <div className="rain" aria-hidden="true" />
@@ -328,7 +326,14 @@ export function App() {
       <div className="scene-meta" aria-label="当前时间"><time>{line.time}</time></div>
 
       <section className="dialogue" aria-live="polite">
-        <div className="dialogue-copy">
+        <div
+          className={`dialogue-copy${canAdvanceByClick ? " can-advance" : ""}`}
+          data-testid="dialogue-advance"
+          role={canAdvanceByClick ? "button" : undefined}
+          tabIndex={canAdvanceByClick ? 0 : undefined}
+          aria-label={canAdvanceByClick ? "推进对话" : undefined}
+          onClick={canAdvanceByClick ? advance : undefined}
+        >
           <p className={`speaker${line.speaker ? "" : " is-hidden"}`}>{line.speaker || "旁白"}</p>
           <p className="line">{lineText}<span className="advance-mark" aria-hidden="true" /></p>
         </div>

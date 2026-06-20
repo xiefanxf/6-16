@@ -122,6 +122,8 @@ button:focus-visible {
 }
 
 .dialogue-copy { max-width: min(720px, 61vw); }
+.dialogue-copy.can-advance { cursor: pointer; }
+.dialogue-copy.can-advance:focus-visible { outline: 1px solid rgba(255, 255, 255, 0.42); outline-offset: 9px; }
 
 .speaker {
   width: max-content;
