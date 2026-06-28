@@ -80,7 +80,9 @@ export function App() {
   const { cue, enabled: soundEnabled, start: startAudio, toggle: toggleSound } = useAmbientAudio(scoreMode);
   const hasSave = useMemo(() => Boolean(localStorage.getItem(SAVE_KEY)), [toast]);
   const chapterOneIndex = useMemo(() => STORY.findIndex((item) => item.id === "chapter-one"), []);
-  const chapterLabel = index >= chapterOneIndex ? "第一章　缺席者" : "序章　雨没有停";
+  const chapterTwoIndex = useMemo(() => STORY.findIndex((item) => item.id === "chapter-two"), []);
+  const inChapterTwo = index >= chapterTwoIndex;
+  const chapterLabel = inChapterTwo ? "第二章　目击者" : index >= chapterOneIndex ? "第一章　缺席者" : "序章　雨没有停";
   const canAdvanceByClick = !line.choices && !pendingFact && !showLog && !showFacts && !showEnd;
 
   useEffect(() => {
@@ -245,6 +247,19 @@ export function App() {
     setStarted(true);
   };
 
+  const beginChapterTwo = () => {
+    setIndex(chapterTwoIndex);
+    setHistory([]);
+    setDecisions({});
+    setFacts(["loop", "roster"]);
+    setChoiceResult(null);
+    setPendingFact(null);
+    setShowEnd(false);
+    setTitlePanel(null);
+    if (soundEnabled) startAudio();
+    setStarted(true);
+  };
+
   const updateAutoDelay = (delay) => {
     setAutoDelay(delay);
     localStorage.setItem(AUTO_DELAY_KEY, String(delay));
@@ -290,6 +305,7 @@ export function App() {
               <header><div><p>CHAPTER SELECT</p><h2>章节选择</h2></div><button onClick={() => setTitlePanel(null)} type="button">关闭</button></header>
               <button className="chapter-option" onClick={begin} type="button"><span>00</span><div><strong>序章　雨没有停</strong><small>六月十六日 · 第一次循环</small></div></button>
               <button className="chapter-option" onClick={beginChapterOne} type="button"><span>01</span><div><strong>第一章　缺席者</strong><small>六月十六日 · 第二次循环</small></div></button>
+              <button className="chapter-option" onClick={beginChapterTwo} type="button"><span>02</span><div><strong>第二章　目击者</strong><small>六月十六日 · 第三次循环</small></div></button>
             </section>
           </div>
         )}
@@ -374,10 +390,10 @@ export function App() {
 
       {showEnd && (
         <div className="modal-backdrop end-backdrop" role="presentation">
-          <section className="end-panel" role="dialog" aria-modal="true" aria-label="第一章结束">
-            <p className="end-kicker">FIRST VERTICAL SLICE</p>
-            <h2>第一章《缺席者》</h2>
-            <p>已确认 {facts.length} 项事实 · 悠真证言开启</p>
+          <section className="end-panel" role="dialog" aria-modal="true" aria-label={inChapterTwo ? "第二章结束" : "第一章结束"}>
+            <p className="end-kicker">{inChapterTwo ? "SECOND VERTICAL SLICE" : "FIRST VERTICAL SLICE"}</p>
+            <h2>{inChapterTwo ? "第二章《目击者》" : "第一章《缺席者》"}</h2>
+            <p>已确认 {facts.length} 项事实 · {inChapterTwo ? "目击者证词浮出" : "悠真证言开启"}</p>
             <div className="end-facts">{facts.map((factId) => <span key={factId}>{FACTS[factId].title}</span>)}</div>
             <div className="end-actions">
               <button className="primary-action" onClick={restart} type="button">重新体验</button>

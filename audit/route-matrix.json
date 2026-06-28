@@ -43,7 +43,9 @@
   "combinationsChecked": 162,
   "factsExpected": [
     "loop",
-    "roster"
+    "roster",
+    "witness",
+    "eighthSeat"
   ],
   "findings": [],
   "routesPassed": 162,
@@ -65,7 +67,9 @@
       },
       "facts": [
         "loop",
-        "roster"
+        "roster",
+        "witness",
+        "eighthSeat"
       ],
       "selected": [
         "“你们是谁？”",
@@ -92,7 +96,9 @@
       },
       "facts": [
         "loop",
-        "roster"
+        "roster",
+        "witness",
+        "eighthSeat"
       ],
       "selected": [
         "“门为什么锁着？”",
@@ -119,7 +125,9 @@
       },
       "facts": [
         "loop",
-        "roster"
+        "roster",
+        "witness",
+        "eighthSeat"
       ],
       "selected": [
         "“我为什么会在这里？”",
@@ -130,5 +138,5 @@
       ]
     }
   ],
-  "storyNodes": 68
+  "storyNodes": 112
 }

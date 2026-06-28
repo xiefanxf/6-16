@@ -23,6 +23,18 @@ export const FACTS = {
     title: "值日表被修改",
     description: "去年 6 月 16 日的值日表由神谷悠真事后重写，夏见遥并非独自进入旧楼。",
   },
+  witness: {
+    id: "witness",
+    category: "记录",
+    title: "目击者",
+    description: "去年六月十六日，全班都被要求在笔录上签字，声称没有看见夏见遥进入旧楼。七个人都签了。",
+  },
+  eighthSeat: {
+    id: "eighthSeat",
+    category: "记录",
+    title: "第八个座位",
+    description: "去年只有一名学生拒绝签字，坚持自己看见了真相。从那以后，全班都“想不起”她。教室因此多出第八张、谁也不认领的桌子。",
+  },
 };
 
 export const STORY = [
@@ -204,6 +216,55 @@ export const STORY = [
   { id: "coffee-memory", scene: "corridor", time: "16:25", speaker: "神谷悠真", text: "那罐咖啡其实很难喝。她自己也喝了一口，然后笑了很久。" },
   { id: "human-haruka", scene: "corridor", time: "16:25", speaker: "白石凛", text: "这是今天第一次，有人说起活着的夏见遥。", fact: "roster", sfx: "fact" },
   { id: "final-broadcast", scene: "corridor", time: "18:16", speaker: "夏见遥的声音", text: "这次，请不要先决定我是什么样的人。", effect: "memory", sfx: "static", ending: true },
+
+  { id: "chapter-two", scene: "classroom", time: "07:10", speaker: "", text: "第二章　目击者", loop: 3, chapter: "第二章　目击者", effect: "chapter" },
+  { id: "ch2-open", scene: "classroom", time: "07:10", speaker: "", text: "第三轮循环。午夜把一切重置回早上七点十分。凛带走了两张事实卡，和悠真一句连他自己都已忘掉的坦白。", loop: 3, sfx: "bell" },
+  { id: "ch2-yuma-1", scene: "classroom", time: "07:10", speaker: "神谷悠真", text: "醒了？这里是二年 B 班。栖川学园。", loop: 3 },
+  { id: "ch2-rin-1", scene: "classroom", time: "07:10", speaker: "白石凛", text: "……我知道。", loop: 3 },
+  { id: "ch2-yuma-deja", scene: "classroom", time: "07:11", speaker: "神谷悠真", text: "奇怪。你说“知道”的样子，我好像在哪儿见过。", loop: 3 },
+  { id: "ch2-kuze-see", scene: "classroom", time: "07:20", speaker: "", text: "凛的目光越过悠真，落在最后一排。久世透举着相机，对着空荡的教室按下快门。", loop: 3 },
+  { id: "ch2-rin-kuze", scene: "classroom", time: "07:20", speaker: "白石凛", text: "久世。你每天都在拍。拍给谁看？", loop: 3 },
+  { id: "ch2-kuze-1", scene: "classroom", time: "07:20", speaker: "久世透", text: "拍下来，就不用记住了。", loop: 3 },
+
+  { id: "ch2-corridor-enter", scene: "corridor", time: "10:00", speaker: "", text: "走廊尽头的窗外仍在落雨。久世跟了上来，相机垂在胸前。", loop: 3 },
+  { id: "ch2-corridor-photo", scene: "corridor", time: "10:00", speaker: "白石凛", text: "合照里只有七张桌子。可你按快门时，明明对着八张。", loop: 3 },
+  { id: "ch2-kuze-2", scene: "corridor", time: "10:00", speaker: "久世透", text: "相机不会拍错。是它替我们决定——哪一张不该出现。", loop: 3 },
+  { id: "ch2-rin-ask-photo", scene: "corridor", time: "10:01", speaker: "白石凛", text: "把去年的照片给我看。", loop: 3 },
+  { id: "ch2-kuze-3", scene: "corridor", time: "10:01", speaker: "久世透", text: "……你确定要看？看过的人，都开始做同一个梦。", loop: 3 },
+
+  { id: "ch2-darkroom-enter", scene: "records", time: "10:30", speaker: "", text: "暗房。红灯下，一张旧照在显影液里慢慢浮起。", loop: 3 },
+  { id: "ch2-kuze-4", scene: "records", time: "10:30", speaker: "久世透", text: "那天我在对面楼顶试长焦。我没想拍到那个。", loop: 3 },
+  { id: "ch2-photo-figures", scene: "records", time: "10:31", speaker: "", text: "照片边缘，旧楼连廊的护栏旁站着两个人影。一个是夏见遥，另一个撑着红伞。", loop: 3, effect: "pulse" },
+  { id: "ch2-rin-umbrella", scene: "records", time: "10:31", speaker: "白石凛", text: "撑伞的是谁？", loop: 3 },
+  { id: "ch2-kuze-5", scene: "records", time: "10:32", speaker: "久世透", text: "冲洗出来那天，我谁都没告诉。我把它压在了最底下。", loop: 3 },
+  { id: "ch2-rin-realize", scene: "records", time: "11:00", speaker: "白石凛", text: "所以广播说“你们都看见了”——不是指那一瞬间，是指事后。", loop: 3 },
+  { id: "ch2-kuze-6", scene: "records", time: "11:00", speaker: "久世透", text: "全班都被叫去做过笔录。我们都签了字，说那天没看见遥上旧楼。", loop: 3 },
+  { id: "ch2-rin-accuse", scene: "records", time: "11:01", speaker: "白石凛", text: "你们看见了，却签字说没看见。", loop: 3 },
+  { id: "ch2-kuze-7", scene: "records", time: "11:01", speaker: "久世透", text: "老师说，这样对活着的人最好。", loop: 3 },
+  { id: "ch2-haruka-memory", scene: "records", time: "11:02", speaker: "夏见遥的声音", text: "你们看见了。你们明明都看见了。", loop: 3, effect: "memory", sfx: "memory" },
+  { id: "ch2-witness-fact", scene: "records", time: "11:03", speaker: "", text: "笔录上，七个名字整齐排列。没有一个人写下自己看见了什么。", loop: 3, fact: "witness", sfx: "fact" },
+
+  { id: "ch2-corridor2-enter", scene: "corridor", time: "16:16", speaker: "", text: "旧教学楼的连廊。雨丝斜斜地飘进来。", loop: 3 },
+  { id: "ch2-broadcast-duty", scene: "corridor", time: "16:16", speaker: "广播中的女声", text: "今日值日生，请留在旧教学楼。", loop: 3, sfx: "static" },
+  { id: "ch2-rin-deduce", scene: "corridor", time: "16:16", speaker: "白石凛", text: "撑红伞的人，比遥晚一步上来，也比她先一步下去。", loop: 3 },
+  { id: "ch2-umbrella", scene: "corridor", time: "16:17", speaker: "", text: "连廊尽头，一把红伞靠在护栏边。没有人撑着它，伞下的地面却没有被雨打湿。", loop: 3, effect: "pulse" },
+  { id: "ch2-rin-umbrella2", scene: "corridor", time: "16:17", speaker: "白石凛", text: "这把伞从来不属于遥。是有人替她撑过一次，又把它留在了这里。", loop: 3 },
+  { id: "ch2-haruka-memory2", scene: "corridor", time: "16:18", speaker: "夏见遥的声音", text: "下雨了，你怎么不打伞。……算了，这把给你。我跑两步就到。", loop: 3, effect: "memory", sfx: "memory" },
+  { id: "ch2-rin-recognize", scene: "corridor", time: "16:18", speaker: "白石凛", text: "我认得这句话。", loop: 3 },
+  { id: "ch2-rollcall-intro", scene: "corridor", time: "18:16", speaker: "", text: "广播第三次点名，很慢，像怕念错。", loop: 3, sfx: "static" },
+  { id: "ch2-rollcall", scene: "corridor", time: "18:16", speaker: "广播中的女声", text: "白石凛。", loop: 3, sfx: "static" },
+  { id: "ch2-rin-q", scene: "corridor", time: "18:16", speaker: "白石凛", text: "……你到底认不认识我。", loop: 3 },
+  { id: "ch2-broadcast-2", scene: "corridor", time: "18:17", speaker: "广播中的女声", text: "去年这一天，有一个人在笔录上写了“我看见了”。只有一个人。", loop: 3, sfx: "static" },
+  { id: "ch2-rin-q2", scene: "corridor", time: "18:17", speaker: "白石凛", text: "那个人后来怎么样了？", loop: 3 },
+  { id: "ch2-broadcast-3", scene: "corridor", time: "18:18", speaker: "广播中的女声", text: "从那天起，没有人再记得她坐在哪一张桌子。", loop: 3, sfx: "static" },
+  { id: "ch2-eighthseat-fact", scene: "corridor", time: "18:18", speaker: "", text: "教室里那张多出来的桌子，从此谁也不认领。", loop: 3, fact: "eighthSeat", sfx: "fact" },
+
+  { id: "ch2-midnight", scene: "classroom", time: "24:00", speaker: "广播中的女声", text: "本日最后一项失物招领——一把红色雨伞，一名坠楼的学生，以及，一个坚持记得她的人。", loop: 3, effect: "midnight", sfx: "bell" },
+  { id: "ch2-reset-narr", scene: "classroom", time: "24:00", speaker: "", text: "循环重置了。但这一次，凛没有立刻睁开眼。", loop: 3 },
+  { id: "ch2-rin-mono", scene: "classroom", time: "24:00", speaker: "白石凛", text: "第八个座位是我的。我不是被困在这一天的人——我是被这一天，一直留在原地的人。", loop: 3 },
+  { id: "ch2-loop4-wake", scene: "classroom", time: "07:10", speaker: "神谷悠真", text: "醒了？这里是——", loop: 4, sfx: "bell" },
+  { id: "ch2-loop4-pause", scene: "classroom", time: "07:10", speaker: "", text: "他停住，没有把那句话念完。", loop: 4 },
+  { id: "ch2-ending", scene: "classroom", time: "07:10", speaker: "神谷悠真", text: "……白石。你的桌子，为什么我今天第一次看清了它在哪儿。", loop: 4, effect: "memory", ending: true },
 ];
 
 export function resolveText(line, decisions) {
