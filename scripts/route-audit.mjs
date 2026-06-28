@@ -52,8 +52,10 @@ for (const [index, line] of STORY.entries()) {
 
 let segment = 1;
 let lastMinutes = -1;
+let currentLoop = 1;
 for (const line of STORY) {
-  if (line.id === "reset") {
+  if (line.loop && line.loop > currentLoop) {
+    currentLoop = line.loop;
     segment += 1;
     lastMinutes = -1;
   }
@@ -86,7 +88,7 @@ for (const combination of combinations) {
     if (line.fact && !acquiredFacts.includes(line.fact)) acquiredFacts.push(line.fact);
   }
 
-  assert(acquiredFacts.length === 2, `route ${combination.join("-")} acquires ${acquiredFacts.length} facts instead of 2`);
+  assert(acquiredFacts.length === 4, `route ${combination.join("-")} acquires ${acquiredFacts.length} facts instead of 4`);
   assert(STORY.at(-1).ending === true, "final story node is not marked as an ending");
   routeSummaries.push({ combination, decisions, facts: acquiredFacts, selected });
 }
