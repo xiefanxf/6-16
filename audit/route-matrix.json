@@ -38,18 +38,106 @@
         "抓住悠真的手",
         "抢救值日表"
       ]
+    },
+    {
+      "id": "testimony-focus",
+      "options": [
+        "先问藤泽葵",
+        "先问久世透",
+        "先问黑田陆",
+        "先问水野纱月",
+        "先问御影司",
+        "先问相原澪",
+        "让七个人按时间顺序说"
+      ]
+    },
+    {
+      "id": "identity-choice",
+      "options": [
+        "公开自己的身份",
+        "暂时隐瞒恐惧"
+      ]
+    },
+    {
+      "id": "reconstruction-choice",
+      "options": [
+        "按责任顺序还原",
+        "把责任归给陆",
+        "把责任归给司"
+      ]
+    },
+    {
+      "id": "final-choice",
+      "options": [
+        "让 6 月 16 日结束",
+        "强行从校门离开",
+        "维持第八名学生的存在",
+        "只和最先开口的人承担记忆"
+      ]
     }
   ],
-  "combinationsChecked": 162,
+  "chapterSelectDefaults": {
+    "chapter-one": {
+      "tone": "cautious",
+      "firstRoute": "main"
+    },
+    "chapter-two": {
+      "tone": "cautious",
+      "firstRoute": "main",
+      "recordFocus": "roster",
+      "confrontation": "evidence",
+      "rescue": "yuma"
+    },
+    "chapter-three": {
+      "tone": "cautious",
+      "firstRoute": "main",
+      "recordFocus": "roster",
+      "confrontation": "evidence",
+      "rescue": "yuma",
+      "testimonyFocus": "aoi"
+    },
+    "chapter-four": {
+      "tone": "cautious",
+      "firstRoute": "main",
+      "recordFocus": "roster",
+      "confrontation": "evidence",
+      "rescue": "yuma",
+      "testimonyFocus": "aoi",
+      "identityChoice": "public"
+    },
+    "finale": {
+      "tone": "cautious",
+      "firstRoute": "main",
+      "recordFocus": "roster",
+      "confrontation": "evidence",
+      "rescue": "yuma",
+      "testimonyFocus": "aoi",
+      "identityChoice": "public",
+      "reconstruction": "order"
+    }
+  },
+  "combinationsChecked": 27216,
   "factsExpected": [
     "loop",
-    "roster"
+    "roster",
+    "aoiVoice",
+    "tooruPhoto",
+    "rikuRelease",
+    "satsukiPrivacy",
+    "tsukasaMaterials",
+    "mioMessage",
+    "rinIdentity",
+    "responsibilityOrder"
   ],
   "findings": [],
-  "routesPassed": 162,
+  "routesPassed": 27216,
   "sampleRoutes": [
     {
       "combination": [
+        0,
+        0,
+        0,
+        0,
         0,
         0,
         0,
@@ -61,18 +149,34 @@
         "firstRoute": "main",
         "recordFocus": "attendance",
         "confrontation": "accuse",
-        "rescue": "yuma"
+        "rescue": "yuma",
+        "testimonyFocus": "aoi",
+        "identityChoice": "public",
+        "reconstruction": "order",
+        "endingPath": "true"
       },
       "facts": [
         "loop",
-        "roster"
+        "roster",
+        "aoiVoice",
+        "tooruPhoto",
+        "rikuRelease",
+        "satsukiPrivacy",
+        "tsukasaMaterials",
+        "mioMessage",
+        "rinIdentity",
+        "responsibilityOrder"
       ],
       "selected": [
         "“你们是谁？”",
         "检查主教学楼",
         "二年 B 班点名册",
         "“是你重写的。”",
-        "抓住悠真的手"
+        "抓住悠真的手",
+        "先问藤泽葵",
+        "公开自己的身份",
+        "按责任顺序还原",
+        "让 6 月 16 日结束"
       ]
     },
     {
@@ -81,25 +185,45 @@
         1,
         1,
         1,
-        1
+        1,
+        0,
+        0,
+        0,
+        0
       ],
       "decisions": {
         "tone": "direct",
         "firstRoute": "gate",
         "recordFocus": "roster",
         "confrontation": "protect",
-        "rescue": "roster"
+        "rescue": "roster",
+        "testimonyFocus": "aoi",
+        "identityChoice": "public",
+        "reconstruction": "order",
+        "endingPath": "true"
       },
       "facts": [
         "loop",
-        "roster"
+        "roster",
+        "aoiVoice",
+        "tooruPhoto",
+        "rikuRelease",
+        "satsukiPrivacy",
+        "tsukasaMaterials",
+        "mioMessage",
+        "rinIdentity",
+        "responsibilityOrder"
       ],
       "selected": [
         "“门为什么锁着？”",
         "前往校门",
         "去年六月值日表",
         "“你在保护谁？”",
-        "抢救值日表"
+        "抢救值日表",
+        "先问藤泽葵",
+        "公开自己的身份",
+        "按责任顺序还原",
+        "让 6 月 16 日结束"
       ]
     },
     {
@@ -108,27 +232,47 @@
         2,
         2,
         2,
-        1
+        1,
+        6,
+        1,
+        2,
+        3
       ],
       "decisions": {
         "tone": "vulnerable",
         "firstRoute": "radio",
         "recordFocus": "access",
         "confrontation": "evidence",
-        "rescue": "roster"
+        "rescue": "roster",
+        "testimonyFocus": "order",
+        "identityChoice": "hidden",
+        "reconstruction": "blameTsukasa",
+        "endingPath": "character"
       },
       "facts": [
         "loop",
-        "roster"
+        "roster",
+        "aoiVoice",
+        "tooruPhoto",
+        "rikuRelease",
+        "satsukiPrivacy",
+        "tsukasaMaterials",
+        "mioMessage",
+        "rinIdentity",
+        "responsibilityOrder"
       ],
       "selected": [
         "“我为什么会在这里？”",
         "调查广播室",
         "旧教学楼出入记录",
         "把领用记录放在他面前",
-        "抢救值日表"
+        "抢救值日表",
+        "让七个人按时间顺序说",
+        "暂时隐瞒恐惧",
+        "把责任归给司",
+        "只和最先开口的人承担记忆"
       ]
     }
   ],
-  "storyNodes": 68
+  "storyNodes": 113
 }

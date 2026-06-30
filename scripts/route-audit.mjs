@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { FACTS, SCENES, STORY, resolveText } from "../src/story.js";
+import { CHAPTER_DEFAULT_DECISIONS, CHAPTERS, FACTS, SCENES, STORY, resolveText } from "../src/story.js";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const output = join(root, "audit");
@@ -52,8 +52,10 @@ for (const [index, line] of STORY.entries()) {
 
 let segment = 1;
 let lastMinutes = -1;
+let lastLoop = STORY[0]?.loop ?? 1;
 for (const line of STORY) {
-  if (line.id === "reset") {
+  const currentLoop = line.loop ?? lastLoop;
+  if (line.id === "reset" || currentLoop > lastLoop) {
     segment += 1;
     lastMinutes = -1;
   }
@@ -61,6 +63,7 @@ for (const line of STORY) {
   const total = hours * 60 + minutes;
   assert(total >= lastMinutes, `${line.id} moves backward in loop ${segment}: ${line.time}`);
   lastMinutes = total;
+  lastLoop = currentLoop;
 }
 
 const combinations = cartesian(choiceLines.map((line) => line.choices.length));
@@ -86,7 +89,7 @@ for (const combination of combinations) {
     if (line.fact && !acquiredFacts.includes(line.fact)) acquiredFacts.push(line.fact);
   }
 
-  assert(acquiredFacts.length === 2, `route ${combination.join("-")} acquires ${acquiredFacts.length} facts instead of 2`);
+  assert(acquiredFacts.length === Object.keys(FACTS).length, `route ${combination.join("-")} acquires ${acquiredFacts.length} facts instead of ${Object.keys(FACTS).length}`);
   assert(STORY.at(-1).ending === true, "final story node is not marked as an ending");
   routeSummaries.push({ combination, decisions, facts: acquiredFacts, selected });
 }
@@ -97,8 +100,20 @@ assert(positions.every((position) => position >= 0), "Yuma confession/memory nod
 assert(positions[0] < positions[1] && positions[1] < positions[2], "Haruka's ordinary memory does not follow Yuma's admission");
 assert(STORY.findIndex((line) => line.fact === "roster") >= positions[2], "roster fact interrupts Haruka's ordinary-memory beat");
 
+for (const chapter of CHAPTERS) {
+  const chapterIndex = chapter.index ?? STORY.findIndex((line) => line.id === chapter.id);
+  assert(chapterIndex >= 0, `chapter select target is missing: ${chapter.id}`);
+  const defaults = CHAPTER_DEFAULT_DECISIONS[chapter.id] ?? {};
+  for (const line of STORY.slice(chapterIndex)) {
+    if (line.choices) break;
+    const text = resolveText(line, defaults);
+    assert(Boolean(text?.trim()), `chapter select entry resolves ${line.id} to empty text`);
+  }
+}
+
 const report = {
   choiceNodes: choiceLines.map((line) => ({ id: line.id, options: line.choices.map((choice) => choice.label) })),
+  chapterSelectDefaults: CHAPTER_DEFAULT_DECISIONS,
   combinationsChecked: combinations.length,
   factsExpected: Object.keys(FACTS),
   findings,

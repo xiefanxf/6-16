@@ -1,9 +1,23 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { FACTS, SCENES, STORY, resolveText } from "./story.js";
+import { CHAPTER_DEFAULT_DECISIONS, CHAPTERS, FACTS, SCENES, STORY, resolveText } from "./story.js";
 import { useAmbientAudio } from "./useAmbientAudio.js";
 
 const SAVE_KEY = "six-sixteen-prototype-save-v2";
 const AUTO_DELAY_KEY = "six-sixteen-auto-delay";
+const CHAPTER_FACT_PREREQUISITES = {
+  prologue: [],
+  "chapter-one": ["loop"],
+  "chapter-two": ["loop", "roster"],
+  "chapter-three": ["loop", "roster", "aoiVoice", "tooruPhoto", "rikuRelease", "satsukiPrivacy", "tsukasaMaterials", "mioMessage"],
+  "chapter-four": ["loop", "roster", "aoiVoice", "tooruPhoto", "rikuRelease", "satsukiPrivacy", "tsukasaMaterials", "mioMessage", "rinIdentity"],
+  finale: ["loop", "roster", "aoiVoice", "tooruPhoto", "rikuRelease", "satsukiPrivacy", "tsukasaMaterials", "mioMessage", "rinIdentity", "responsibilityOrder"],
+};
+const ENDING_TITLES = {
+  true: "真结局：明日",
+  normal: "普通结局：无雨",
+  eighth: "坏结局：第八名学生",
+  character: "角色结局：未寄出的信",
+};
 
 function AppButton({ children, active = false, onClick }) {
   return (
@@ -79,9 +93,16 @@ export function App() {
         : "ambient";
   const { cue, enabled: soundEnabled, start: startAudio, toggle: toggleSound } = useAmbientAudio(scoreMode);
   const hasSave = useMemo(() => Boolean(localStorage.getItem(SAVE_KEY)), [toast]);
-  const chapterOneIndex = useMemo(() => STORY.findIndex((item) => item.id === "chapter-one"), []);
-  const chapterLabel = index >= chapterOneIndex ? "第一章　缺席者" : "序章　雨没有停";
+  const chapterEntries = useMemo(() => CHAPTERS.map((chapter) => ({
+    ...chapter,
+    index: chapter.index ?? STORY.findIndex((item) => item.id === chapter.id),
+  })).filter((chapter) => chapter.index >= 0), []);
+  const currentChapter = useMemo(() => (
+    [...chapterEntries].reverse().find((chapter) => index >= chapter.index) ?? chapterEntries[0]
+  ), [chapterEntries, index]);
+  const chapterLabel = currentChapter?.title ?? "序章　雨没有停";
   const canAdvanceByClick = !line.choices && !pendingFact && !showLog && !showFacts && !showEnd;
+  const endingTitle = ENDING_TITLES[decisions.endingPath] ?? chapterLabel;
 
   useEffect(() => {
     if (started || !opening) return undefined;
@@ -232,11 +253,14 @@ export function App() {
     setStarted(true);
   };
 
-  const beginChapterOne = () => {
-    setIndex(chapterOneIndex);
+  const beginChapter = (chapterId) => {
+    const chapter = chapterEntries.find((item) => item.id === chapterId);
+    if (!chapter) return;
+    const defaultFacts = CHAPTER_FACT_PREREQUISITES[chapter.id] ?? [];
+    setIndex(chapter.index);
     setHistory([]);
-    setDecisions({});
-    setFacts(["loop"]);
+    setDecisions({ ...(CHAPTER_DEFAULT_DECISIONS[chapter.id] ?? {}) });
+    setFacts(defaultFacts);
     setChoiceResult(null);
     setPendingFact(null);
     setShowEnd(false);
@@ -288,8 +312,12 @@ export function App() {
           <div className="modal-backdrop title-backdrop" role="presentation" onClick={() => setTitlePanel(null)}>
             <section className="title-panel" role="dialog" aria-modal="true" aria-label="章节选择" onClick={(event) => event.stopPropagation()}>
               <header><div><p>CHAPTER SELECT</p><h2>章节选择</h2></div><button onClick={() => setTitlePanel(null)} type="button">关闭</button></header>
-              <button className="chapter-option" onClick={begin} type="button"><span>00</span><div><strong>序章　雨没有停</strong><small>六月十六日 · 第一次循环</small></div></button>
-              <button className="chapter-option" onClick={beginChapterOne} type="button"><span>01</span><div><strong>第一章　缺席者</strong><small>六月十六日 · 第二次循环</small></div></button>
+              {chapterEntries.map((chapter, chapterIndex) => (
+                <button className="chapter-option" key={chapter.id} onClick={() => (chapter.id === "prologue" ? begin() : beginChapter(chapter.id))} type="button">
+                  <span>{String(chapterIndex).padStart(2, "0")}</span>
+                  <div><strong>{chapter.title}</strong><small>六月十六日 · 循环 {chapterIndex + 1}</small></div>
+                </button>
+              ))}
             </section>
           </div>
         )}
@@ -317,7 +345,7 @@ export function App() {
       <div className="rain" aria-hidden="true" />
       <div className="vignette" aria-hidden="true" />
 
-      {index >= chapterOneIndex && (
+      {started && (
         <div className="chapter-meta">
           <span>{chapterLabel}</span>
           <button className={soundEnabled ? "" : "is-muted"} onClick={toggleSound} type="button">声音 {soundEnabled ? "开" : "关"}</button>
@@ -374,10 +402,10 @@ export function App() {
 
       {showEnd && (
         <div className="modal-backdrop end-backdrop" role="presentation">
-          <section className="end-panel" role="dialog" aria-modal="true" aria-label="第一章结束">
-            <p className="end-kicker">FIRST VERTICAL SLICE</p>
-            <h2>第一章《缺席者》</h2>
-            <p>已确认 {facts.length} 项事实 · 悠真证言开启</p>
+          <section className="end-panel" role="dialog" aria-modal="true" aria-label="游戏结束">
+            <p className="end-kicker">COMPLETE ROUTE</p>
+            <h2>{endingTitle}</h2>
+            <p>已确认 {facts.length} 项事实 · 6/16 流程结束</p>
             <div className="end-facts">{facts.map((factId) => <span key={factId}>{FACTS[factId].title}</span>)}</div>
             <div className="end-actions">
               <button className="primary-action" onClick={restart} type="button">重新体验</button>

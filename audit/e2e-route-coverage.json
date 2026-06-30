@@ -1,0 +1,34 @@
+{
+  "factCoverage": "10/10",
+  "optionCoverage": "30/30",
+  "passed": true,
+  "routes": [
+    {
+      "branchTextSeen": true,
+      "choicesCompleted": 9,
+      "consoleErrors": [],
+      "ended": true,
+      "factCount": 10,
+      "id": "true-ending",
+      "resultLinesVerified": 9
+    },
+    {
+      "branchTextSeen": true,
+      "choicesCompleted": 9,
+      "consoleErrors": [],
+      "ended": true,
+      "factCount": 10,
+      "id": "normal-ending",
+      "resultLinesVerified": 9
+    },
+    {
+      "branchTextSeen": true,
+      "choicesCompleted": 9,
+      "consoleErrors": [],
+      "ended": true,
+      "factCount": 10,
+      "id": "character-ending",
+      "resultLinesVerified": 9
+    }
+  ]
+}
