@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { getPortrait } from "./portraits.js";
 import { CHAPTER_DEFAULT_DECISIONS, CHAPTERS, FACTS, SCENES, STORY, resolveText } from "./story.js";
 import { useAmbientAudio } from "./useAmbientAudio.js";
 
@@ -62,6 +63,21 @@ function FactsPanel({ factIds, onClose }) {
   );
 }
 
+function CharacterPortrait({ portrait, speaker }) {
+  if (!portrait) return null;
+  return (
+    <aside className="character-portrait" style={{ "--portrait-accent": portrait.accent }} aria-label={`${speaker}立绘`}>
+      <div className="portrait-frame">
+        <img src={portrait.src} alt="" aria-hidden="true" />
+      </div>
+      <div className="portrait-caption">
+        <strong>{speaker}</strong>
+        <span>{portrait.tone}</span>
+      </div>
+    </aside>
+  );
+}
+
 export function App() {
   const [started, setStarted] = useState(false);
   const [index, setIndex] = useState(0);
@@ -84,6 +100,7 @@ export function App() {
   const line = choiceResult ?? STORY[index];
   const lineText = resolveText(line, decisions);
   const sceneImage = SCENES[line.scene] ?? SCENES.classroom;
+  const portrait = getPortrait(line.speaker);
   const scoreMode = line.effect === "memory" || line.speaker?.includes("夏见遥")
     ? "memory"
     : line.scene === "corridor" || line.effect === "midnight"
@@ -352,8 +369,13 @@ export function App() {
         </div>
       )}
       <div className="scene-meta" aria-label="当前时间"><time>{line.time}</time></div>
+      <CharacterPortrait portrait={portrait} speaker={line.speaker} />
 
-      <section className="dialogue" aria-live="polite">
+      <section
+        className={`dialogue${portrait ? " has-portrait" : ""}`}
+        style={portrait ? { "--portrait-accent": portrait.accent } : undefined}
+        aria-live="polite"
+      >
         <div
           className={`dialogue-copy${canAdvanceByClick ? " can-advance" : ""}`}
           data-testid="dialogue-advance"

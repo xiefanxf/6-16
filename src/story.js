@@ -336,6 +336,7 @@ export const STORY = [
       order: "我们不先找凶手。我们先还原每个人在时间线上做过什么。",
     },
   },
+  { id: "testimony-room-settle", scene: "classroom", time: "07:14", speaker: "", text: "第一个名字让教室里的沉默松动。像有人终于承认：等别人先开口，本身也是这一天的一部分。" },
   { id: "aoi-route-start", scene: "classroom", time: "10:30", speaker: "", text: "葵的手机在没有信号的校园里亮起。云端缓存里，一段被删除的语音停在 16:16。" },
   { id: "aoi-voice", scene: "classroom", time: "10:31", speaker: "夏见遥的声音", text: "葵，如果你还在生气，至少别让他们一个人去旧楼。拜托。", effect: "memory", sfx: "memory" },
   { id: "aoi-confess", scene: "classroom", time: "10:32", speaker: "藤泽葵", text: "我听见了。可前一天晚上我刚骂她总是装好人。我想让她也尝一次没人回头的感觉。" },
@@ -358,6 +359,7 @@ export const STORY = [
   { id: "seven-testimonies-close", scene: "classroom", time: "24:00", speaker: "广播中的女声", text: "七种证词已接收。谎言不再只属于一个人。", effect: "midnight", sfx: "bell" },
 
   { id: "chapter-three", scene: "classroom", time: "07:10", speaker: "", text: "第三章　第八张桌子", loop: 4, chapter: "第三章　第八张桌子", effect: "chapter", sfx: "bell" },
+  { id: "identity-bridge", scene: "classroom", time: "07:11", speaker: "", text: "七张证词卡留在桌面上。每个人都说出了遥的一部分，剩下的问题反而指向了凛自己。" },
   { id: "identity-records", scene: "records", time: "10:30", speaker: "", text: "点名册、转学记录、保健室登记、图书借阅卡，所有系统里都没有白石凛。" },
   { id: "mirror", scene: "classroom", time: "11:00", speaker: "", text: "窗玻璃映出你的脸。葵看见小时候的遥，透看见摄影展那天的遥，澪看见离家前一晚的姐姐。" },
   { id: "ask-identity", scene: "classroom", time: "11:01", speaker: "白石凛", text: "我让你们想起谁？" },
@@ -412,11 +414,12 @@ export const STORY = [
       blameTsukasa: "司交出的材料打开了校方的遮蔽，但如果只留下他的名字，连廊上的每一次迟疑都会消失。",
     },
   },
-  { id: "reconstruction-corrective", scene: "corridor", time: "16:19", speaker: "夏见遥的声音", text: "我不需要一个替大家承担的凶手。我需要你们把自己做过的事说完整。", effect: "memory" },
+  { id: "reconstruction-corrective", scene: "corridor", time: "16:19", speaker: "夏见遥的声音", text: "我不需要一个替大家承担的凶手。我需要你们把自己做过的事说完整。", effect: "memory", sfx: "memory" },
   { id: "responsibility-fact", scene: "corridor", time: "18:16", speaker: "", text: "连廊终于不再重复坠落声。雨水沿护栏滴下，像一条被接回去的时间线。", fact: "responsibilityOrder", sfx: "fact" },
 
   { id: "finale", scene: "classroom", time: "07:10", speaker: "", text: "终章　6/17", loop: 6, chapter: "终章　6/17", effect: "chapter", sfx: "bell" },
   { id: "final-morning", scene: "classroom", time: "07:10", speaker: "", text: "第六次早晨，没有人再假装只是做了同一个噩梦。八张桌子围成一圈，中央放着所有事实卡。" },
+  { id: "final-bridge", scene: "classroom", time: "07:11", speaker: "", text: "凛没有催促他们忏悔。她只是把每张卡翻到背面，确认上面不再只有遥一个人的名字。" },
   {
     id: "focus-echo",
     scene: "classroom",

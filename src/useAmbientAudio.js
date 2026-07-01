@@ -1,60 +1,205 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const SCORE_MODES = {
-  ambient: {
-    tempo: 54,
-    lead: [69, null, null, null, 76, null, null, null, 74, null, null, null, 71, null, null, null],
-    bass: [45, null, null, null, null, null, null, null, 40, null, null, null, null, null, null, null],
-    wave: "sine",
-    level: 0.036,
-    duration: 2.8,
-  },
-  investigation: {
-    tempo: 76,
-    lead: [62, null, 69, null, 65, null, 68, null, 62, null, 69, null, 70, null, 68, null],
-    bass: [38, null, null, null, 38, null, null, null, 41, null, null, null, 37, null, null, null],
-    wave: "triangle",
-    level: 0.03,
-    duration: 0.72,
-  },
-  confrontation: {
-    tempo: 88,
-    lead: [52, null, null, 53, null, null, 59, null, 52, null, 50, null, null, 53, null, null],
-    bass: [28, null, null, null, null, null, 27, null, 28, null, null, null, 31, null, null, null],
-    wave: "sawtooth",
-    level: 0.022,
-    duration: 1.15,
-  },
-  memory: {
-    tempo: 66,
-    lead: [69, null, 72, null, 76, null, 74, null, 72, null, 69, null, 67, null, 69, null],
-    bass: [45, null, null, null, null, null, null, null, 41, null, null, null, null, null, null, null],
-    wave: "sine",
-    level: 0.045,
-    duration: 1.9,
-  },
+const configuredBase = import.meta.env?.BASE_URL ?? "./";
+const assetBase = typeof document === "undefined"
+  ? configuredBase
+  : new URL(configuredBase, document.baseURI).href;
+
+const TRACK_FILES = {
+  rain: "rain-bed.m4a",
+  ambient: "ambient.m4a",
+  investigation: "investigation.m4a",
+  confrontation: "confrontation.m4a",
+  memory: "memory.m4a",
 };
 
+const SFX_FILES = {
+  bell: "bell.m4a",
+  fact: "fact.m4a",
+  impact: "impact.m4a",
+  memory: "memory-stinger.m4a",
+  static: "static.m4a",
+};
+
+const TRACK_LEVELS = {
+  ambient: 0.5,
+  investigation: 0.52,
+  confrontation: 0.5,
+  memory: 0.48,
+};
+
+const audioUrl = (file) => `${assetBase}assets/audio/${file}`;
 const noteFrequency = (midi) => 440 * (2 ** ((midi - 69) / 12));
 
-function scheduleTone(context, destination, midi, at, options) {
-  const oscillator = context.createOscillator();
-  const filter = context.createBiquadFilter();
+async function decodeAudio(context, file) {
+  const response = await fetch(audioUrl(file));
+  if (!response.ok) throw new Error(`Unable to load audio asset: ${file}`);
+  return context.decodeAudioData(await response.arrayBuffer());
+}
+
+function createGain(context, level = 1) {
   const gain = context.createGain();
-  const attack = Math.min(0.08, options.duration * 0.16);
+  gain.gain.value = level;
+  return gain;
+}
 
-  oscillator.type = options.wave;
-  oscillator.frequency.setValueAtTime(noteFrequency(midi), at);
-  if (options.detune) oscillator.detune.setValueAtTime(options.detune, at);
-  filter.type = "lowpass";
-  filter.frequency.setValueAtTime(options.cutoff, at);
+function fadeParam(param, context, target, seconds) {
+  const now = context.currentTime;
+  param.cancelScheduledValues(now);
+  param.setValueAtTime(Math.max(param.value, 0.0001), now);
+  param.linearRampToValueAtTime(target, now + seconds);
+}
+
+function startLoop(context, destination, buffer, level, fadeSeconds = 0.8) {
+  const source = context.createBufferSource();
+  const gain = createGain(context, 0.0001);
+  source.buffer = buffer;
+  source.loop = true;
+  source.connect(gain).connect(destination);
+  source.start();
+  fadeParam(gain.gain, context, level, fadeSeconds);
+  return { source, gain };
+}
+
+function stopLoop(context, loop, fadeSeconds = 0.8) {
+  if (!loop) return;
+  const stopAt = context.currentTime + fadeSeconds + 0.05;
+  fadeParam(loop.gain.gain, context, 0.0001, fadeSeconds);
+  try {
+    loop.source.stop(stopAt);
+  } catch {
+    // The source may have been stopped by browser cleanup already.
+  }
+}
+
+function scheduleTone(context, destination, frequency, at, options) {
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+  const filter = context.createBiquadFilter();
+  oscillator.type = options.wave ?? "sine";
+  oscillator.frequency.setValueAtTime(frequency, at);
+  filter.type = options.filter ?? "lowpass";
+  filter.frequency.setValueAtTime(options.cutoff ?? 1400, at);
+  filter.Q.setValueAtTime(options.q ?? 0.8, at);
   gain.gain.setValueAtTime(0.0001, at);
-  gain.gain.exponentialRampToValueAtTime(options.level, at + attack);
+  gain.gain.exponentialRampToValueAtTime(Math.max(options.level, 0.0002), at + (options.attack ?? 0.04));
   gain.gain.exponentialRampToValueAtTime(0.0001, at + options.duration);
-
   oscillator.connect(filter).connect(gain).connect(destination);
   oscillator.start(at);
-  oscillator.stop(at + options.duration + 0.05);
+  oscillator.stop(at + options.duration + 0.08);
+}
+
+function startFallbackScore(audio) {
+  if (audio.fallbackTimer) return;
+  const { context, musicBus } = audio;
+  const sequencer = { step: 0, nextAt: context.currentTime + 0.1, mode: audio.scoreMode };
+  const patterns = {
+    ambient: { tempo: 54, root: 45, motif: [69, null, 72, null, 67, null, 64, null], level: 0.018 },
+    investigation: { tempo: 66, root: 38, motif: [62, 65, null, 60, 57, null, 62, null], level: 0.02 },
+    confrontation: { tempo: 78, root: 28, motif: [52, null, 53, null, 47, null, 50, null], level: 0.021 },
+    memory: { tempo: 58, root: 45, motif: [69, null, 72, null, 76, null, 74, null], level: 0.024 },
+  };
+
+  audio.fallbackTimer = window.setInterval(() => {
+    if (context.state !== "running") return;
+    if (sequencer.mode !== audio.scoreMode) {
+      sequencer.mode = audio.scoreMode;
+      sequencer.step = 0;
+      sequencer.nextAt = context.currentTime + 0.08;
+    }
+    const pattern = patterns[audio.scoreMode] ?? patterns.ambient;
+    const stepDuration = 30 / pattern.tempo;
+    while (sequencer.nextAt < context.currentTime + 0.45) {
+      if (sequencer.step % pattern.motif.length === 0) {
+        [0, 7, 12, 19].forEach((offset, index) => {
+          scheduleTone(context, musicBus, noteFrequency(pattern.root + offset), sequencer.nextAt + index * 0.02, {
+            attack: 0.48,
+            cutoff: 680 + index * 220,
+            duration: 7,
+            level: 0.018 / (index + 1),
+            wave: index % 2 ? "triangle" : "sine",
+          });
+        });
+      }
+      const midi = pattern.motif[sequencer.step % pattern.motif.length];
+      if (midi) {
+        scheduleTone(context, musicBus, noteFrequency(midi), sequencer.nextAt, {
+          attack: audio.scoreMode === "confrontation" ? 0.018 : 0.08,
+          cutoff: audio.scoreMode === "confrontation" ? 900 : 1650,
+          duration: audio.scoreMode === "investigation" ? 1.1 : 1.8,
+          level: pattern.level,
+          wave: audio.scoreMode === "confrontation" ? "triangle" : "sine",
+        });
+      }
+      sequencer.step += 1;
+      sequencer.nextAt += stepDuration;
+    }
+  }, 90);
+}
+
+function playFallbackSfx(audio, kind) {
+  const { context, sfxBus } = audio;
+  const now = context.currentTime;
+  if (kind === "static" || kind === "memory") {
+    const buffer = context.createBuffer(1, Math.floor(context.sampleRate * 0.58), context.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < data.length; i += 1) {
+      data[i] = (Math.random() * 2 - 1) * ((1 - i / data.length) ** 1.5);
+    }
+    const source = context.createBufferSource();
+    const filter = context.createBiquadFilter();
+    const gain = context.createGain();
+    source.buffer = buffer;
+    filter.type = kind === "memory" ? "bandpass" : "highpass";
+    filter.frequency.value = kind === "memory" ? 720 : 2300;
+    gain.gain.value = kind === "memory" ? 0.05 : 0.035;
+    source.connect(filter).connect(gain).connect(sfxBus);
+    source.start(now);
+    return;
+  }
+
+  const notes = kind === "bell" ? [784, 587, 392] : [kind === "fact" ? 622 : 116];
+  notes.forEach((frequency, index) => {
+    scheduleTone(context, sfxBus, frequency, now + index * 0.045, {
+      attack: 0.012,
+      cutoff: kind === "impact" ? 360 : 2000,
+      duration: kind === "bell" ? 1.6 : kind === "fact" ? 0.82 : 0.45,
+      level: kind === "impact" ? 0.08 : 0.04 / (index + 1),
+      wave: kind === "impact" ? "triangle" : "sine",
+    });
+  });
+}
+
+function transitionMusic(audio, mode, fadeSeconds = 1.2) {
+  const buffer = audio.buffers[mode];
+  if (!buffer) return false;
+  if (audio.currentMode === mode && audio.currentMusic) return true;
+  stopLoop(audio.context, audio.currentMusic, fadeSeconds);
+  audio.currentMusic = startLoop(audio.context, audio.musicBus, buffer, TRACK_LEVELS[mode] ?? 0.48, fadeSeconds);
+  audio.currentMode = mode;
+  return true;
+}
+
+async function loadAssets(audio) {
+  const { context } = audio;
+  const trackEntries = Object.entries(TRACK_FILES);
+  const sfxEntries = Object.entries(SFX_FILES);
+  const decoded = await Promise.allSettled([
+    ...trackEntries.map(async ([key, file]) => [key, await decodeAudio(context, file)]),
+    ...sfxEntries.map(async ([key, file]) => [`sfx:${key}`, await decodeAudio(context, file)]),
+  ]);
+
+  decoded.forEach((result) => {
+    if (result.status !== "fulfilled") return;
+    const [key, buffer] = result.value;
+    if (key.startsWith("sfx:")) audio.sfxBuffers[key.slice(4)] = buffer;
+    else audio.buffers[key] = buffer;
+  });
+
+  if (audio.buffers.rain && !audio.rainLoop) {
+    audio.rainLoop = startLoop(context, audio.rainBus, audio.buffers.rain, 0.44, 1.5);
+  }
+  if (!transitionMusic(audio, audio.scoreMode, 1.2)) startFallbackScore(audio);
 }
 
 export function useAmbientAudio(scoreMode = "ambient") {
@@ -64,7 +209,21 @@ export function useAmbientAudio(scoreMode = "ambient") {
 
   useEffect(() => {
     scoreRef.current = scoreMode;
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.scoreMode = scoreMode;
+    if (audio.ready) transitionMusic(audio, scoreMode);
   }, [scoreMode]);
+
+  const stop = useCallback(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (audio.fallbackTimer) window.clearInterval(audio.fallbackTimer);
+    stopLoop(audio.context, audio.rainLoop, 0.2);
+    stopLoop(audio.context, audio.currentMusic, 0.2);
+    void audio.context.close();
+    audioRef.current = null;
+  }, []);
 
   const start = useCallback(() => {
     if (audioRef.current) {
@@ -76,91 +235,46 @@ export function useAmbientAudio(scoreMode = "ambient") {
     if (!AudioContext) return null;
 
     const context = new AudioContext();
-    const master = context.createGain();
-    const rainBus = context.createGain();
-    const musicBus = context.createGain();
-    master.gain.value = 0.62;
-    rainBus.gain.value = 0.8;
-    musicBus.gain.value = 1;
-    rainBus.connect(master);
+    const master = createGain(context, 0.72);
+    const compressor = context.createDynamicsCompressor();
+    const rainBus = createGain(context, 0.86);
+    const musicBus = createGain(context, 0.86);
+    const sfxBus = createGain(context, 0.82);
+    const delay = context.createDelay(2.5);
+    const delayGain = createGain(context, 0.12);
+
+    musicBus.connect(delay).connect(delayGain).connect(master);
     musicBus.connect(master);
-    master.connect(context.destination);
+    rainBus.connect(master);
+    sfxBus.connect(master);
+    master.connect(compressor).connect(context.destination);
 
-    const rainBuffer = context.createBuffer(1, context.sampleRate * 3, context.sampleRate);
-    const channel = rainBuffer.getChannelData(0);
-    let last = 0;
-    for (let i = 0; i < channel.length; i += 1) {
-      const white = Math.random() * 2 - 1;
-      last = last * 0.965 + white * 0.035;
-      channel[i] = last * 2.2;
-    }
-
-    const rain = context.createBufferSource();
-    const rainFilter = context.createBiquadFilter();
-    const rainGain = context.createGain();
-    rain.buffer = rainBuffer;
-    rain.loop = true;
-    rainFilter.type = "lowpass";
-    rainFilter.frequency.value = 1450;
-    rainGain.gain.value = 0.052;
-    rain.connect(rainFilter).connect(rainGain).connect(rainBus);
-    rain.start();
-
-    const sequencer = {
-      step: 0,
-      nextAt: context.currentTime + 0.08,
-      mode: scoreRef.current,
+    const audio = {
+      buffers: {},
+      context,
+      currentMode: null,
+      currentMusic: null,
+      fallbackTimer: null,
+      musicBus,
+      rainBus,
+      rainLoop: null,
+      ready: false,
+      scoreMode: scoreRef.current,
+      sfxBuffers: {},
+      sfxBus,
     };
+    audioRef.current = audio;
 
-    const scheduleScore = () => {
-      if (context.state !== "running") return;
-      const mode = SCORE_MODES[scoreRef.current] ?? SCORE_MODES.ambient;
-      if (sequencer.mode !== scoreRef.current) {
-        sequencer.mode = scoreRef.current;
-        sequencer.step = 0;
-        sequencer.nextAt = context.currentTime + 0.12;
-      }
+    audio.loadPromise = loadAssets(audio)
+      .then(() => {
+        audio.ready = true;
+      })
+      .catch(() => {
+        audio.ready = true;
+        startFallbackScore(audio);
+      });
 
-      const stepDuration = 30 / mode.tempo;
-      while (sequencer.nextAt < context.currentTime + 0.28) {
-        const patternIndex = sequencer.step % mode.lead.length;
-        const lead = mode.lead[patternIndex];
-        const bass = mode.bass[patternIndex];
-        if (lead) {
-          scheduleTone(context, musicBus, lead, sequencer.nextAt, {
-            wave: mode.wave,
-            level: mode.level,
-            duration: mode.duration,
-            cutoff: scoreRef.current === "confrontation" ? 720 : 1500,
-            detune: scoreRef.current === "memory" ? -4 : 0,
-          });
-        }
-        if (bass) {
-          scheduleTone(context, musicBus, bass, sequencer.nextAt, {
-            wave: "sine",
-            level: mode.level * 0.72,
-            duration: Math.max(1.35, mode.duration),
-            cutoff: 420,
-          });
-        }
-        sequencer.step += 1;
-        sequencer.nextAt += stepDuration;
-      }
-    };
-
-    const timer = window.setInterval(scheduleScore, 120);
-    scheduleScore();
-    audioRef.current = { context, master, musicBus, rain, timer };
-    return audioRef.current;
-  }, []);
-
-  const stop = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    window.clearInterval(audio.timer);
-    audio.rain.stop();
-    void audio.context.close();
-    audioRef.current = null;
+    return audio;
   }, []);
 
   const toggle = useCallback(() => {
@@ -175,36 +289,16 @@ export function useAmbientAudio(scoreMode = "ambient") {
     if (!enabled || !kind) return;
     const audio = start();
     if (!audio) return;
-    const { context, master } = audio;
-    const now = context.currentTime;
-
-    if (kind === "static" || kind === "memory") {
-      const buffer = context.createBuffer(1, context.sampleRate * 0.38, context.sampleRate);
-      const data = buffer.getChannelData(0);
-      for (let i = 0; i < data.length; i += 1) data[i] = (Math.random() * 2 - 1) * (1 - i / data.length);
-      const source = context.createBufferSource();
-      const filter = context.createBiquadFilter();
-      const gain = context.createGain();
-      filter.type = kind === "memory" ? "bandpass" : "highpass";
-      filter.frequency.value = kind === "memory" ? 680 : 2200;
-      gain.gain.setValueAtTime(kind === "memory" ? 0.08 : 0.045, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.38);
-      source.buffer = buffer;
-      source.connect(filter).connect(gain).connect(master);
-      source.start(now);
+    const buffer = audio.sfxBuffers[kind];
+    if (!buffer) {
+      playFallbackSfx(audio, kind);
       return;
     }
-
-    const oscillator = context.createOscillator();
-    const gain = context.createGain();
-    oscillator.type = kind === "impact" ? "triangle" : "sine";
-    oscillator.frequency.setValueAtTime(kind === "bell" ? 784 : kind === "fact" ? 622 : 116, now);
-    if (kind === "bell") oscillator.frequency.exponentialRampToValueAtTime(392, now + 1.2);
-    gain.gain.setValueAtTime(kind === "impact" ? 0.09 : 0.045, now);
-    gain.gain.exponentialRampToValueAtTime(0.001, now + (kind === "bell" ? 1.4 : 0.45));
-    oscillator.connect(gain).connect(master);
-    oscillator.start(now);
-    oscillator.stop(now + (kind === "bell" ? 1.5 : 0.5));
+    const source = audio.context.createBufferSource();
+    const gain = createGain(audio.context, kind === "impact" ? 0.72 : 0.64);
+    source.buffer = buffer;
+    source.connect(gain).connect(audio.sfxBus);
+    source.start();
   }, [enabled, start]);
 
   useEffect(() => () => stop(), [stop]);

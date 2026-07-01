@@ -4,8 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "audio:generate": "node scripts/generate-audio-assets.mjs",
     "audit:routes": "node scripts/route-audit.mjs",
     "dev": "vite --configLoader runner --host 127.0.0.1",
+    "e2e:media": "node scripts/e2e-media-check.mjs",
     "build": "vite build --configLoader runner",
     "preview": "vite preview --configLoader runner --host 127.0.0.1"
   },

@@ -19,7 +19,9 @@ const mime = {
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
   ".js": "text/javascript",
+  ".m4a": "audio/mp4",
   ".png": "image/png",
+  ".wav": "audio/wav",
 };
 
 const routes = [

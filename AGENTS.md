@@ -12,8 +12,10 @@ When implementing from a selected generated mock, treat that image as the source
 - New locations should feel like the same school and weather, with realistic environment art rather than placeholder panels.
 - Character routes must pair evidence with an ordinary memory of Haruka so she remains a person rather than only a mystery.
 - Extend the prototype through the existing dialogue, choice, fact-card, history, save, auto, and skip patterns; do not redesign the shell when adding chapters.
-- Keep the score story-driven: ambient, investigation, confrontation, and Haruka-memory modes should change with narrative state while rain remains a supporting layer.
+- Keep the score story-driven: ambient, investigation, confrontation, and Haruka-memory modes should crossfade with narrative state while rain remains a separate supporting layer.
+- BGM should use generated audio assets first and a Web Audio fallback only as insurance; keep it delicate and layered rather than a short obvious loop.
 - Reference public scene assets through Vite's base URL so local preview and GitHub Pages subpath deployments behave identically.
 - Keep the first paint lightweight: use the classroom preview immediately, fade in the compressed full scene, then preload later locations after the title is ready.
 - Preserve a complete title flow with a skippable opening, new game, continue, chapter select, and functional settings.
 - Advance dialogue only from the dialogue-copy region or keyboard shortcuts; background and scene clicks must remain inert to prevent accidental choices.
+- Use generated raster character portraits for named students and Haruka memory lines; do not show a humanoid portrait for the school broadcast voice.
