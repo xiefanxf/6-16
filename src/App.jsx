@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { getPortrait } from "./portraits.js";
+import { PORTRAIT_PRELOAD_URLS, getPortrait } from "./portraits.js";
 import { CHAPTER_DEFAULT_DECISIONS, CHAPTERS, FACTS, SCENES, STORY, resolveText } from "./story.js";
 import { useAmbientAudio } from "./useAmbientAudio.js";
 
@@ -19,6 +19,25 @@ const ENDING_TITLES = {
   eighth: "坏结局：第八名学生",
   character: "角色结局：未寄出的信",
 };
+const preloadedImages = new Map();
+
+function preloadImage(source, priority = "auto") {
+  if (!source || preloadedImages.has(source)) return;
+  const image = new Image();
+  image.decoding = "async";
+  image.fetchPriority = priority;
+  image.src = source;
+  preloadedImages.set(source, image);
+}
+
+function schedulePreload(callback) {
+  if (typeof window.requestIdleCallback === "function") {
+    const id = window.requestIdleCallback(callback, { timeout: 1600 });
+    return () => window.cancelIdleCallback(id);
+  }
+  const timer = window.setTimeout(callback, 160);
+  return () => window.clearTimeout(timer);
+}
 
 function AppButton({ children, active = false, onClick }) {
   return (
@@ -68,7 +87,15 @@ function CharacterPortrait({ portrait, speaker }) {
   return (
     <aside className="character-portrait" style={{ "--portrait-accent": portrait.accent }} aria-label={`${speaker}立绘`}>
       <div className="portrait-frame">
-        <img src={portrait.src} alt="" aria-hidden="true" />
+        <img
+          src={portrait.src}
+          alt=""
+          aria-hidden="true"
+          decoding="async"
+          fetchPriority="high"
+          loading="eager"
+          onError={(event) => { event.currentTarget.hidden = true; }}
+        />
       </div>
       <div className="portrait-caption">
         <strong>{speaker}</strong>
@@ -132,6 +159,8 @@ export function App() {
     if (started) return undefined;
     let active = true;
     const image = new Image();
+    image.decoding = "async";
+    image.fetchPriority = "high";
     image.onload = () => {
       if (active) setTitleImageReady(true);
     };
@@ -141,14 +170,21 @@ export function App() {
 
   useEffect(() => {
     if (!titleImageReady) return undefined;
-    const timer = window.setTimeout(() => {
-      [SCENES.records, SCENES.corridor].forEach((source) => {
-        const image = new Image();
-        image.src = source;
-      });
-    }, 400);
-    return () => window.clearTimeout(timer);
+    return schedulePreload(() => {
+      [SCENES.records, SCENES.corridor, ...PORTRAIT_PRELOAD_URLS].forEach((source) => preloadImage(source));
+    });
   }, [titleImageReady]);
+
+  useEffect(() => {
+    if (!started) return undefined;
+    return schedulePreload(() => {
+      STORY.slice(index, index + 10).forEach((item) => {
+        preloadImage(SCENES[item.scene] ?? SCENES.classroom);
+        const upcomingPortrait = getPortrait(item.speaker);
+        if (upcomingPortrait) preloadImage(upcomingPortrait.src);
+      });
+    });
+  }, [index, started]);
 
   const rememberLine = useCallback((current, text = current.text) => {
     setHistory((items) => {

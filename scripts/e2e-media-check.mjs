@@ -3,6 +3,8 @@ import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 import { extname, join, normalize } from "node:path";
 import { fileURLToPath } from "node:url";
+import { PORTRAIT_PRELOAD_URLS } from "../src/portraits.js";
+import { SCENES } from "../src/story.js";
 
 const runtimeModules = "/Users/xiefan/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules";
 const require = createRequire(`${runtimeModules}/package.json`);
@@ -33,6 +35,18 @@ const expectedAudio = [
   "memory.m4a",
   "rain-bed.m4a",
   "static.m4a",
+];
+const expectedImages = [...new Set([
+  ...Object.values(SCENES),
+  ...PORTRAIT_PRELOAD_URLS,
+])];
+const requiredHtmlHints = [
+  { href: "./assets/classroom-preview.jpg", rel: "preload" },
+  { href: "./assets/classroom-rain.jpg", rel: "preload" },
+  { href: "./assets/records-room-rain.jpg", rel: "prefetch" },
+  { href: "./assets/old-corridor-rain.jpg", rel: "prefetch" },
+  { href: "./assets/portraits/generated/rin.png", rel: "prefetch" },
+  { href: "./assets/portraits/generated/yuma.png", rel: "prefetch" },
 ];
 
 function safePath(url) {
@@ -105,6 +119,18 @@ async function advanceUntilChoice(page, limit = 80) {
   return advanceUntil(page, (state) => state.choices.length > 0, limit, { allowChoices: true });
 }
 
+async function verifyImageDecoding(page, sources) {
+  return page.evaluate(async (imageSources) => Promise.all(imageSources.map((source) => (
+    new Promise((resolve) => {
+      const image = new Image();
+      image.decoding = "async";
+      image.onload = () => resolve({ ok: image.naturalWidth > 0 && image.naturalHeight > 0, source });
+      image.onerror = () => resolve({ ok: false, source });
+      image.src = source;
+    })
+  ))), sources);
+}
+
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 720 }, reducedMotion: "reduce" });
   page.on("response", (response) => {
@@ -115,6 +141,20 @@ try {
   });
 
   await page.goto(`http://127.0.0.1:${port}`, { waitUntil: "networkidle" });
+  const htmlHints = await page.locator("link[rel='preload'], link[rel='prefetch']").evaluateAll((links) => (
+    links.map((link) => ({ href: link.getAttribute("href"), rel: link.getAttribute("rel") }))
+  ));
+  for (const hint of requiredHtmlHints) {
+    if (!htmlHints.some((item) => item.href === hint.href && item.rel === hint.rel)) {
+      findings.push(`Missing HTML ${hint.rel} hint: ${hint.href}`);
+    }
+  }
+
+  const decodedImages = await verifyImageDecoding(page, expectedImages);
+  decodedImages.filter((item) => !item.ok).forEach((item) => {
+    findings.push(`Image failed to decode: ${item.source}`);
+  });
+
   const skipOpening = page.getByRole("button", { name: "跳过", exact: true });
   if (await skipOpening.count()) await skipOpening.click();
   await page.getByRole("button", { name: /开始游戏/ }).click();
@@ -151,6 +191,7 @@ try {
 
 const report = {
   audioLoaded: Object.fromEntries([...observedAudio.entries()].sort(([left], [right]) => left.localeCompare(right))),
+  imageCount: expectedImages.length,
   findings,
   passed: findings.length === 0,
 };

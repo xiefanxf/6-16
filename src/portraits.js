@@ -22,6 +22,8 @@ export const PORTRAITS = {
   "未知女声": portrait("haruka.png", "记忆残响", "#d3b2b6"),
 };
 
+export const PORTRAIT_PRELOAD_URLS = [...new Set(Object.values(PORTRAITS).map((item) => item.src))];
+
 export function getPortrait(speaker) {
   return PORTRAITS[speaker] ?? null;
 }
